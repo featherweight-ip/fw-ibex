@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+fragment:
+  # Phase-2 trap/interrupt test: seven directed DUTs exercising exceptions,
+  # interrupts (MIE gating + NMI), MRET, and WFI, checked via the frozen CSR state.
+  tasks:
+  - name: trap-tb
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_trap_tb.sv
+      incdirs:
+      - .
+
+  - name: trap-img
+    uses: hdlsim.vlt.SimImage
+    needs: [spl, fw.mem.files, trap-tb]
+    with:
+      top: [ibex_trap_tb]
+
+  - root: trap
+    uses: hdlsim.vlt.SimRun
+    needs: [trap-img]

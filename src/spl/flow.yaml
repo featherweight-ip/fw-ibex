@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+fragment:
+  # Behavioral (class-based) Ibex model. The core model speaks only the protocol-
+  # independent fw_mem_if edge, so it depends on the fw modeling library ONLY
+  # (fw-hdl.hdl.sv-src carries fw_hdl_pkg + fw_std_pkg where fw_mem_if lives). No
+  # bus-protocol dependency here -- that enters only at the future ibex_spl wrapper.
+  # The RVFI trace port (fw.proto.rvfi) is added to this task's `needs` at P4.
+  # incdir '.' picks up the .svh includes (macros, types, helpers, components).
+  tasks:
+  - export: spl
+    uses: std.FileSet
+    needs: [fw-hdl.hdl.sv-src, fw.proto.rvfi.class]
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_spl_pkg.sv
+      incdirs:
+      - .

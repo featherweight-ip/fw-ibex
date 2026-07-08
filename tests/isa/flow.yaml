@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+fragment:
+  # Phase-3 ISA directed test: M extension edge cases, C-extension expansions with a
+  # word-straddling 32-bit fetch, and an illegal-compressed trap.
+  tasks:
+  - name: isa-tb
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_isa_tb.sv
+      incdirs:
+      - .
+
+  - name: isa-img
+    uses: hdlsim.vlt.SimImage
+    needs: [spl, fw.mem.files, isa-tb]
+    with:
+      top: [ibex_isa_tb]
+
+  - root: isa
+    uses: hdlsim.vlt.SimRun
+    needs: [isa-img]

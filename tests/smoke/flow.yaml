@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+fragment:
+  # Phase-1 pure-TLM smoke test: the Ibex model runs an RV32I program out of an
+  # fw_mem_flat RAM over fw_mem_if (no bus, no transactors) and self-checks the
+  # final architectural state.
+  tasks:
+  - name: smoke-tb
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_smoke_tb.sv
+      incdirs:
+      - .
+
+  # `needs` the model FileSet (spl, same package) and the memory element library
+  # (fw.mem.files); each transitively carries fw-hdl.hdl.sv-src.
+  - name: smoke-img
+    uses: hdlsim.vlt.SimImage
+    needs: [spl, fw.mem.files, smoke-tb]
+    with:
+      top: [ibex_smoke_tb]
+
+  - root: smoke
+    uses: hdlsim.vlt.SimRun
+    needs: [smoke-img]

@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+fragment:
+  # P5 RVFI lockstep: the SPL model (spl) vs the lowRISC Ibex RTL (ibex-rtl),
+  # both driving RVFI streams into the fwvip-rvfi scoreboard.
+  #
+  # The Ibex RTL has no flow.yaml of its own, so ibex-rtl enumerates the package
+  # files (which Verilator will NOT auto-find via -y) + ibex_top, and leans on
+  # the SimImage's -y library-search dirs to pull in every ibex/prim submodule
+  # by filename. +define+RVFI exposes ibex_top's rvfi_* pins.
+  tasks:
+  - name: ibex-rtl
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      base: ${{ env.IVPM_PACKAGES }}/ibex
+      include:
+      - vendor/lowrisc_ip/ip/prim/rtl/prim_util_pkg.sv
+      - vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv
+      - vendor/lowrisc_ip/ip/prim/rtl/prim_mubi_pkg.sv
+      - vendor/lowrisc_ip/ip/prim/rtl/prim_cipher_pkg.sv
+      - vendor/lowrisc_ip/ip/prim/rtl/prim_count_pkg.sv
+      - vendor/lowrisc_ip/ip/prim_generic/rtl/prim_pkg.sv
+      - vendor/lowrisc_ip/ip/prim_generic/rtl/prim_ram_2p_pkg.sv
+      - vendor/lowrisc_ip/ip/prim_generic/rtl/prim_ram_1p_pkg.sv
+      - vendor/lowrisc_ip/ip/prim_generic/rtl/prim_ram_1r1w_pkg.sv
+      - rtl/ibex_pkg.sv
+      - rtl/ibex_top.sv
+      incdirs:
+      - rtl
+      - vendor/lowrisc_ip/ip/prim/rtl
+      - vendor/lowrisc_ip/ip/prim_generic/rtl
+      - vendor/lowrisc_ip/dv/sv/dv_utils
+      defines:
+      - RVFI
+
+  - name: lockstep-mem
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_pin_mem.sv
+      incdirs:
+      - .
+
+  - name: lockstep-tb
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_lockstep_tb.sv
+      incdirs:
+      - .
+
+  # spl carries fw.proto.rvfi.class (rvfi_if + monitor xtor modules + bridge);
+  # org.fwvip.rvfi.files carries the scoreboard/collectors (and needs the same
+  # class task, so fw_proto_rvfi_pkg.sv is compiled exactly once).
+  - name: lockstep-img
+    uses: hdlsim.vlt.SimImage
+    needs: [spl, fw.mem.files, org.fwvip.rvfi.files, ibex-rtl, lockstep-mem, lockstep-tb]
+    with:
+      top: [ibex_lockstep_tb]
+      args:
+      - -y
+      - ${{ env.IVPM_PACKAGES }}/ibex/rtl
+      - -y
+      - ${{ env.IVPM_PACKAGES }}/ibex/vendor/lowrisc_ip/ip/prim/rtl
+      - -y
+      - ${{ env.IVPM_PACKAGES }}/ibex/vendor/lowrisc_ip/ip/prim_generic/rtl
+      - +libext+.sv+.v
+
+  - root: lockstep
+    uses: hdlsim.vlt.SimRun
+    needs: [lockstep-img]

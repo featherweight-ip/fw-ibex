@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+fragment:
+  # SPL-model throughput benchmark (no RTL). The SimRun wall time / retired count
+  # gives instructions (== cycles) per second.
+  tasks:
+  - name: bench-tb
+    uses: std.FileSet
+    with:
+      type: systemVerilogSource
+      include:
+      - ibex_bench_tb.sv
+      incdirs:
+      - .
+
+  - name: bench-img
+    uses: hdlsim.vlt.SimImage
+    needs: [spl, fw.mem.files, bench-tb]
+    with:
+      top: [ibex_bench_tb]
+
+  - root: bench
+    uses: hdlsim.vlt.SimRun
+    needs: [bench-img]

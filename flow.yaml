@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+package:
+  name: fw-ibex
+
+  # Imported relative to $IVPM_PACKAGES (the portable, no-sibling-path form used by
+  # the other fw packages). fw-hdl supplies the kernel + fw_mem_if; fw-mem supplies
+  # the behavioral RAM the testbenches wire the imem/dmem masters to. The RVFI kits
+  # (fw-proto-rvfi / fwvip-rvfi) are imported when P4/P5 land.
+  imports:
+  - ${{ env.IVPM_PACKAGES }}/fw-hdl
+  - ${{ env.IVPM_PACKAGES }}/fw-mem
+  - ${{ env.IVPM_PACKAGES }}/fw-proto-rvfi
+  - ${{ env.IVPM_PACKAGES }}/fwvip-rvfi
+
+  fragments:
+  - src/spl/flow.yaml
+  - tests/smoke/flow.yaml
+  - tests/trap/flow.yaml
+  - tests/isa/flow.yaml
+  - tests/rvfi/flow.yaml
+  - tests/lockstep/flow.yaml
+  - tests/bench/flow.yaml

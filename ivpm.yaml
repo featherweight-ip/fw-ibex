@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://fvutils.github.io/ivpm/ivpm.schema.json
+
+package:
+  name: fw-ibex
+
+  dep-sets:
+  - name: default-dev
+    deps: 
+    - { name: sim-tools, src: ivpm.yaml, url: https://edapack.github.io/ivpm.yaml, dep-set: sim.rtl }
+    - { name: riscv-isa-manual, url: https://github.com/riscv/riscv-isa-manual.git }
+    - { name: ibex, url: https://github.com/lowRISC/ibex.git }
+    - { name: fw-hdl, url: https://github.com/featherweight-hdl/fw-hdl.git }
+    - { name: fw-mem, url: https://github.com/featherweight-ip/fw-mem.git }
+    - { name: fw-wb-dma, url: https://github.com/featherweight-hdl/fw-wb-dma.git }
+    - { name: fw-proto-core, url: https://github.com/featherweight-ip/fw-proto-core.git }
+    - { name: fw-proto-rvfi, url: https://github.com/featherweight-ip/fw-proto-rvfi.git }
+    - { name: fw-skills, url: https://github.com/featherweight-ip/fw-skills.git }
+    - { name: dv-flow-mgr, url: https://github.com/dv-flow/dv-flow-mgr.git }
+    - { name: dv-flow-libhdlsim, url: https://github.com/dv-flow/dv-flow-libhdlsim.git }
+    # fw-hdl's tests/formal fragment uses the formal.sby task lib; declare it so the
+    # already-fetched package is installed into the venv (else package load fails
+    # resolving formal.sby.BMC whenever fw-hdl is imported).
+    - { name: dv-flow-libformal, url: https://github.com/dv-flow/dv-flow-libformal.git }
+    - { name: fwvip-rvfi, url: https://github.com/featherweight-vip/fwvip-rvfi.git }
+    - { name: gcc-riscv, src: ivpm.yaml, url: https://edapack.github.io/ivpm.yaml, dep-set: gcc-riscv }
+    - { name: riscv-tests, url: https://github.com/riscv-software-src/riscv-tests.git }
+      
